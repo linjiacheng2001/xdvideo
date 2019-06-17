@@ -5,7 +5,9 @@ import com.ljc.xdvideo.domain.User;
 import com.ljc.xdvideo.mapper.UserMapper;
 import com.ljc.xdvideo.service.UserService;
 import com.ljc.xdvideo.utils.HttpUtils;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.stereotype.Service;
 
 import javax.jws.soap.SOAPBinding;
@@ -13,6 +15,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 功能描述:
@@ -29,22 +32,27 @@ public class UserServiceImpl implements UserService {
 
 
     @Autowired
+
     private UserMapper userMapper;
 
     @Override
     public User saveWeChatUser(String code) {
 
+        ReentrantReadWriteLock
         String accessTokenUrl = String.format(WeChatConfig.getAccessTokenUrl(), weChatConfig.getOpenAppid(), weChatConfig.getOpenAppsecret(), code);
+
 
         //获取access_token
         Map<String, Object> baseMap = HttpUtils.doGet(accessTokenUrl);
         if (baseMap == null || baseMap.isEmpty()) {
+
             return null;
+
         }
         String accessToken = (String) baseMap.get("access_token");
         String openId = (String) baseMap.get("openid");
-
         User user1 = userMapper.findByOpenId(openId);
+
 
         //如果存在数据库中存在这个用户
         if (user1 != null) {
